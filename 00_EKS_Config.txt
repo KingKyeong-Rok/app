@@ -1,0 +1,119 @@
+[ EKS Cluster 관리를 위한 kubectl 구성 ]
+
+[ 1.VScode Remote SSH 설정 ] 
+
+- EKS 관리작업을 수행 할 BastionHost VScode에서 SSH연결
+- "~" 윈도우 사용자의 Home Directory 
+
+>. EKS 구성 시 사용한 EC2 Key-pair 파일 "~\.ssh" Directory 하위로 이동
+>. VScode "F1" -> Remote-SSH: Configuration 검색 후 ~\.ssh\config 선택
+>. config 파일에서 SSH 연결정보 입력
+
+Host <Alias>
+    HostName <BastionHost Public IP>
+    User <Login User Name [ec2-user] >
+    IdentityFile <SSH KeyFile 경로>
+
+[ EX ]
+Host kube-bastion
+    HostName 3.36.111.93
+    User ec2-user
+    IdentityFile ~/.ssh/first-key.pem
+
+>. VScode "F1" -> Remote-SSH: Connect to Host 검색 후 BastionHost 선택
+>. BastionHost 연결확인 및 Home Directory 불러오기
+
+
+
+[ 2.BastionHost aws-cli Version Update ] 
+
+$ aws --version
+aws-cli/2.15.30 Python/3.9.16 Linux/6.1.96-102.177.amzn2023.x86_64 source/x86_64.amzn.2023 prompt/off
+
+> 버전 확인 후  aws-cli/2.x 이 아니라면 아래와 같이 설치 함.
+
+※ aws-cli Version Update
+AWS DOCS : https://docs.aws.amazon.com/ko_kr/cli/latest/userguide/getting-started-install.html
+ 
+$ sudo yum remove awscli
+$ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+$ unzip awscliv2.zip
+$ sudo ./aws/install
+
+$ export PATH=/usr/local/bin:$PATH
+$ source ~/.bash_profile
+
+
+[ 3.BastionHost profile setting ] 
+$ aws configure --profile admin
+AWS Access Key ID [None]: AKIARMCRI6VKGFZ44U3P
+AWS Secret Access Key [None]: 6tfuuQkK+Mb0QGlS4rveHH
+Default region name [None]: ap-northeast-2a
+Default output format [None]: 
+
+$ aws configure list --profile admin
+      Name                    Value             Type    Location
+      ----                    -----             ----    --------
+   profile                    admin           manual    --profile
+access_key     ****************4U3P shared-credentials-file    
+secret_key     ****************B8nU shared-credentials-file    
+    region          ap-northeast-2a      config-file    ~/.aws/config
+
+
+
+[ 3.BastionHost kubectl Install ] 
+
+※ Kubectl Download Install
+AWS DOCS : https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/install-kubectl.html
+
+$ curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.30.0/2024-05-12/bin/linux/amd64/kubectl
+
+$ chmod +x kubectl 
+
+$ echo $PATH
+/home/ec2-user/.vscode-server/cli/servers/Stable-f1e16e1e6214d7c44d078b1f0607b2388f29d729/server/bin/remote-cli:/home/ec2-user/.local/bin:/home/ec2-user/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin
+
+$ pwd
+/home/ec2-user
+$ ls bin
+ls: cannot access 'bin': No such file or directory
+$ mkdir bin
+$ mv kubectl bin
+
+$ kubectl version --client
+Client Version: v1.30.0-eks-036c24b
+Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
+
+
+[ 4.BastionHost Kuconfig Configuration ] 
+
+※ Kuconfig Configuration
+AWS DOCS : https://docs.aws.amazon.com/ko_kr/eks/latest/userguide/create-kubeconfig.html
+
+# 우리가 생성한 컨트롤 플레인에 마스터 노드에 위치를 잡아주었다.
+$ aws eks update-kubeconfig --region ap-northeast-2 --name my-eks --profile admin
+Added new context my-eks to /home/ec2-user/.kube/config
+
+$ kubectl get svc
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.100.0.1   <none>        443/TCP   2d2h
+
+$ kubectl -n kube-system get configmap aws-auth -o yaml
+apiVersion: v1
+data:
+  mapRoles: |
+    - groups:
+      - system:bootstrappers
+      - system:nodes
+      rolearn: arn:aws:iam::094659736916:role/initial-eks-node-group-2024071905132277320000000b
+      username: system:node:{{EC2PrivateDNSName}}
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2024-07-19T05:22:17Z"
+  name: aws-auth
+  namespace: kube-system
+  resourceVersion: "990"
+  uid: 6000315d-9b3b-4468-a196-f0edb2dc1a8
+
+
+
