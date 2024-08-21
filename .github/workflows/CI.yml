@@ -21,6 +21,8 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
       with:
         region: ap-northeast-2
+        access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     - name: Build and push to ECR
       id: build-image
@@ -38,13 +40,13 @@ jobs:
 
     - name: Update Kubernetes manifest
       run: |
-        sed -i "s|image:.*|image: $REPOSITORY_URI:$IMAGE_TAG|" ${{ github.workspace }}/manifest/${{ env.deploy-basic.yml }}
+        sed -i "s|image:.*|image: $REPOSITORY_URI:$IMAGE_TAG|" ${{ github.workspace }}/manifest/${{ env.K8S_DEPLOYMENT_PATH }}
 
     - name: Commit and push updated manifest
       run: |
         cd manifest
         git config --global user.name 'github-actions'
         git config --global user.email 'github-actions@github.com'
-        git add ${{ env.deploy-basic.yml }}
+        git add ${{ github.workspace }}/manifest/${{ env.K8S_DEPLOYMENT_PATH }}
         git commit -m "Updated deployment image to $IMAGE_TAG"
         git push
