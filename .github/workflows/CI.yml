@@ -20,28 +20,31 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
       with:
-        region: us-east-1
+        region: ap-northeast-2
 
     - name: Build and push to ECR
       id: build-image
       run: |
         IMAGE_TAG=${GITHUB_SHA::7}
-        REPOSITORY_URI=123456789012.dkr.ecr.us-east-1.amazonaws.com/my-app-repo
+        REPOSITORY_URI=891377406720.dkr.ecr.ap-northeast-2.amazonaws.com/my-app-repo
 
         docker buildx build --platform linux/amd64 -t $REPOSITORY_URI:$IMAGE_TAG .
         docker push $REPOSITORY_URI:$IMAGE_TAG
 
-    - name: Output image URI
-      run: echo "IMAGE_URI=$REPOSITORY_URI:$IMAGE_TAG" >> $GITHUB_ENV
+    - name: Clone manifest repository
+      run: |
+        git clone https://github.com/KingKyeong-Rok/manifest.git
+        cd manifest
 
     - name: Update Kubernetes manifest
       run: |
-        sed -i "s|image:.*|image: $REPOSITORY_URI:$IMAGE_TAG|" k8s/deployment.yml
+        sed -i "s|image:.*|image: $REPOSITORY_URI:$IMAGE_TAG|" ${{ github.workspace }}/manifest/${{ env.deploy-basic.yml }}
 
     - name: Commit and push updated manifest
       run: |
+        cd manifest
         git config --global user.name 'github-actions'
         git config --global user.email 'github-actions@github.com'
-        git add k8s/deployment.yml
-        git commit -m "Updated deployment image"
+        git add ${{ env.deploy-basic.yml }}
+        git commit -m "Updated deployment image to $IMAGE_TAG"
         git push
