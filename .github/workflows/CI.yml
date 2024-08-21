@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write  # GITHUB_TOKEN이 리포지토리에 쓰기 권한을 갖도록 설정
+
 env:
   AWS_REGION: ap-northeast-2
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
