@@ -41,7 +41,7 @@ jobs:
 
     - name: Update Kubernetes manifest
       run: |
-        sed -i "s|image:.*|image: $REPOSITORY_URI:$IMAGE_TAG|" ${{ github.workspace }}/manifest/${{ env.K8S_DEPLOYMENT_PATH }}
+        sed -i "s|image:.*|image: $REPOSITORY_URI:$IMAGE_TAG|" /home/runner/work/kkr-k8s/kkr-k8s/manifest/deploy-basic.yml
 
     - name: Commit and push updated manifest
       run: |
