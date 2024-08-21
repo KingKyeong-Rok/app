@@ -49,5 +49,5 @@ jobs:
         git config --global user.name 'github-actions'
         git config --global user.email 'github-actions@github.com'
         git add ${{ github.workspace }}/manifest/${{ env.K8S_DEPLOYMENT_PATH }}
-        git commit -m "Updated deployment image to $IMAGE_TAG"
+        git commit -m "Upload deployment image to $IMAGE_TAG"
         git push
