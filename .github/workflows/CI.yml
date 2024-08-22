@@ -19,8 +19,10 @@ jobs:
     - name: Log in to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1.4.0
-      with:
-        region: ap-northeast-2
+      env:
+        AWS_REGION: ap-northeast-2
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     - name: Build and push Docker image
       run: |
