@@ -40,20 +40,21 @@ jobs:
 
     - name: Clone manifest repository
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.PAT }}
       run: |
         git clone https://${{ github.actor }}:${{ secrets.PAT }}@github.com/KingKyeong-Rok/manifest.git
         cd manifest
 
     - name: Update Kubernetes manifest
       run: |
-        sed -i "s|image:.*|image: $REPOSITORY_URI:$IMAGE_TAG|" /home/runner/work/kkr-k8s/kkr-k8s/manifest/deploy-basic.yml
+        cd manifest  # 필요한 경우 적절한 디렉토리로 이동
+        ls -la  # 현재 디렉토리의 파일 목록을 출력하여 경로가 올바른지 확인
+        sed -i "s|image:.*|image: $REPOSITORY_URI:$IMAGE_TAG|" deploy-basic.yml
 
     - name: Commit and push updated manifest
       env:
         GITHUB_TOKEN: ${{ secrets.PAT }}
       run: |
-        cd manifest
         git config --global user.name 'github-actions'
         git config --global user.email 'github-actions@github.com'
         git add .
