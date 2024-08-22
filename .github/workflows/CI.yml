@@ -43,9 +43,9 @@ jobs:
 
     - name: Update Kubernetes manifest with new image
       run: |
-        echo "Trying to change to the manifest/k8s directory"
-        if [ -d "manifest/k8s" ]; then
-          cd manifest/k8s 
+        echo "Trying to change to the k8s directory"
+        if [ -d "k8s/" ]; then
+          cd k8s 
           ls -la  
           sed -i "s|image:.*|image: $REPOSITORY_URI:$IMAGE_TAG|" deploy-basic.yml
         else
