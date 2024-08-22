@@ -42,7 +42,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        git clone https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/KingKyeong-Rok/manifest.git
+        git clone https://${{ github.actor }}:${{ secrets.PAT }}@github.com/KingKyeong-Rok/manifest.git
         cd manifest
 
     - name: Update Kubernetes manifest
@@ -51,11 +51,11 @@ jobs:
 
     - name: Commit and push updated manifest
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.PAT }}
       run: |
         cd manifest
         git config --global user.name 'github-actions'
         git config --global user.email 'github-actions@github.com'
         git add .
         git commit -m "Upload deployment image to $IMAGE_TAG"
-        git push https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/KingKyeong-Rok/manifest.git
+        git push https://${{ github.actor }}:${{ secrets.PAT }}@github.com/KingKyeong-Rok/manifest.git
