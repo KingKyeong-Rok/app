@@ -16,14 +16,8 @@ jobs:
     - name: Set up AWS Region
       run: echo "AWS_REGION=<your-region>" >> $GITHUB_ENV
 
-    - name: Log in to Amazon ECR
-      id: ecr-login
-      uses: aws-actions/amazon-ecr-login@v1
-      with:
-        region: ${{ env.AWS_REGION }}
-        mask-password: false
-        registry-type: private
-        skip-logout: false
+    - name: ECR Login
+      uses: ./.github/workflows/ecr-login.yml
 
     - name: Build, tag, and push Docker image
       env:
