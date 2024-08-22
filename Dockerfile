@@ -1,7 +1,8 @@
-FROM openjdk:11-jre-slim
+# Base image 설정 (예: OpenJDK)
+FROM openjdk:17-jdk-alpine
 
-# JAR 파일을 컨테이너 이미지 내에 복사
-COPY boot-0.0.1-SNAPSHOT.jar /app/my-app.jar
+# 애플리케이션 JAR 파일을 컨테이너에 복사
+COPY builds/boot-0.0.1-SNAPSHOT.jar /app.jar
 
-# JAR 파일을 실행하도록 설정
-ENTRYPOINT ["java", "-jar", "/app/my-app.jar"]
+# 컨테이너 시작 시 실행될 명령어
+ENTRYPOINT ["java","-jar","/app.jar"]
