@@ -34,8 +34,8 @@ jobs:
 
     - name: Update Kubernetes manifest with new image
       run: |
-        cd manifest  # 필요한 경우 적절한
-        ls -la  # 현재 디렉토리의 파일 목록을 출력하여
+        cd manifest 
+        ls -la  
         sed -i "s|image:.*|image: $REPOSITORY_URI:$IMAGE_TAG|" k8s/deploy-basic.yml
       env:
         AWS_REGION: ap-northeast-2
