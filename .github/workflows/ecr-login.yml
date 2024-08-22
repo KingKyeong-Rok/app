@@ -1,0 +1,16 @@
+name: ECR Login
+
+on: workflow_call
+
+jobs:
+  login:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          region: ${{ secrets.AWS_REGION }}
+          mask-password: false
+          registry-type: private
+          skip-logout: false
