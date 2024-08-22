@@ -36,9 +36,9 @@ jobs:
 
     - name: Update Kubernetes manifest with new image
       run: |
-        cd manifest 
+        cd manifest/k8s 
         ls -la  
-        sed -i "s|image:.*|image: $REPOSITORY_URI:$IMAGE_TAG|" k8s/deploy-basic.yml
+        sed -i "s|image:.*|image: $REPOSITORY_URI:$IMAGE_TAG|" deploy-basic.yml
       env:
         AWS_REGION: ap-northeast-2
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
