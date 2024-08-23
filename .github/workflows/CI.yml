@@ -82,9 +82,9 @@ jobs:
       - name: Deploy to second repository
         uses: actions/checkout@v3
         with:
-          repository: <username>/<second-repo>
+          repository: KingKyeong-Rok/k8s
           token: ${{ secrets.GITHUB_TOKEN }}
-          path: second-repo
+          path: ./k8s
 
       - name: Copy files
         run: |
