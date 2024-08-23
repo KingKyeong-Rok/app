@@ -1,4 +1,48 @@
-name: Build and Push Docker image to AWS ECR
+# name: Build and Push Docker image to AWS ECR
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - name: Checkout code
+#       uses: actions/checkout@v2
+
+#     - name: Set up AWS environment variables
+#       env:
+#         AWS_REGION: ${{ secrets.AWS_REGION }}
+#         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#       run: |
+#         echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
+#         echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+#         echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+
+#     - name: Log in to Amazon ECR
+#       id: ecr-login
+#       uses: aws-actions/amazon-ecr-login@v1
+#       with:
+#         mask-password: false
+#         registry-type: private
+#         skip-logout: false
+
+#     - name: Build, tag, and push Docker image
+#       env:
+#         ECR_REGISTRY: 891377406720.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+#         ECR_REPOSITORY: my-app-repo
+#         IMAGE_TAG: latest
+
+#       run: |
+#         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+#         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+
+name: Build and Deploy
 
 on:
   push:
@@ -8,35 +52,54 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up AWS environment variables
-      env:
-        AWS_REGION: ${{ secrets.AWS_REGION }}
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      run: |
-        echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
-        echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-        echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+      - name: Set up AWS environment variables
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
 
-    - name: Log in to Amazon ECR
-      id: ecr-login
-      uses: aws-actions/amazon-ecr-login@v1
-      with:
-        mask-password: false
-        registry-type: private
-        skip-logout: false
+      - name: Log in to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build, tag, and push Docker image
-      env:
-        ECR_REGISTRY: 891377406720.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
-        ECR_REPOSITORY: my-app-repo
-        IMAGE_TAG: latest
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: 891377406720.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
+          ECR_REPOSITORY: my-app-repo
+          IMAGE_TAG: latest
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      - name: Deploy to second repository
+        uses: actions/checkout@v3
+        with:
+          repository: <username>/<second-repo>
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: second-repo
+
+      - name: Copy files
+        run: |
+          cp -r * ./k8s
+          cd k8s
+          git add .
+          git commit -m "Deploy from first repository"
+          git push
+
+      - name: Trigger manifest repository workflow
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.repos.createDispatchEvent({
+              owner: 'your-username',
+              repo: 'manifest-repo',
+              event_type: 'deploy'
+            })
