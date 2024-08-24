@@ -1,5 +1,5 @@
 # Base image 설정 (예: OpenJDK)
-FROM FROM openjdk:17-jre
+FROM openjdk:17-jre
 
 # 애플리케이션 JAR 파일을 컨테이너에 복사
 COPY boot-0.0.1-SNAPSHOT.jar /app.jar
