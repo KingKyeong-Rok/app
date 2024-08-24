@@ -25,17 +25,6 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
 
-      - name: Cache Maven packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ runner.os }}-maven-
-
-      - name: Clean, Compile, and Package with Maven
-        run: mvn clean compile package
-
       - name: Set up AWS environment variables
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -55,4 +44,4 @@ jobs:
           skip-logout: false
 
       - name: Build and Push Docker image with Jib
-        run: mvn -X jib:build
+        run: mvn jib:build
