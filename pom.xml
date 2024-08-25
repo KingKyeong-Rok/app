@@ -106,6 +106,9 @@
           			<to>
             			<image>891377406720.dkr.ecr.ap-northeast-2.amazonaws.com/my-app-repo:latest</image>
           			</to>
+          			<container>
+            			<mainClass>com.care.boot.BootApplication</mainClass>
+          			</container>
         		</configuration>
       		</plugin>
 		</plugins>
