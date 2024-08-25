@@ -62,7 +62,7 @@ jobs:
         with:
           repository: KingKyeong-Rok/manifest
           path: manifest-repo
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}  # 여기서 PAT_TOKEN을 사용
           fetch-depth: 1
 
       - name: Update manifest with new image
