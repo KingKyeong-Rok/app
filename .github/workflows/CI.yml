@@ -15,10 +15,12 @@ jobs:
       - name: Set up AWS environment variables
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
+          echo "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}" >> $GITHUB_ENV
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
 
@@ -26,23 +28,30 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      - name: Create ECR repository if not exists
+        run: |
+          aws ecr describe-repositories --repository-names my-app || \
+          aws ecr create-repository --repository-name my-app --region $AWS_REGION
+
       - name: Build Docker image
         id: build-image
         run: |
-          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-app-repo:latest .
+          docker build -t ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app:latest .
 
       - name: Push Docker image to Amazon ECR
         id: push-image
         run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-app-repo:latest
+          docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app:latest
 
-      - name: Update image in manifest repository
+      - name: Clone and update manifest repository
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GITHUB_TOKEN을 환경 변수로 설정
         run: |
-          git clone https://${{ secrets.GH_TOKEN }}@github.com/KingKyeong-Rok/manifest.git
+          git clone https://${{ secrets.GITHUB_TOKEN }}@github.com/KingKyeong-Rok/manifest.git
           cd manifest
-          sed -i "s|image: .*|image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-app-repo:latest|" k8s/deploy-basic2.yml
-          git config --global user.email "0088skg@naver.com"
-          git config --global user.name "KingKyeong-Rok"
+          sed -i "s|image: .*|image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app:latest|" k8s/deploy-basic2.yml
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
           git add k8s/deploy-basic2.yml
           git commit -m "Update image to latest"
-          git push origin main
+          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/KingKyeong-Rok/manifest.git main
