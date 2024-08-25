@@ -66,7 +66,7 @@ jobs:
         with:
           repository: KingKyeong-Rok/manifest
           path: manifest-repo
-          token: ${{ secrets.GH_TOKEN }}  # token 필드를 추가
+          token: ${{ secrets.PAT_TOKEN }}  # token 필드를 추가
           fetch-depth: 1
 
       - name: Replace image tag in helm values (LOCAL)
@@ -78,7 +78,7 @@ jobs:
 
       - name: Push helm repo
         env:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
           IMAGE_TAG: ${{ needs.ci.outputs.IMAGE_TAG }}
         run: |
           cd manifest-repo
