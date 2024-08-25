@@ -14,3 +14,4 @@ EXPOSE 8080
 
 # JAR 파일을 실행하는 명령어를 정의합니다.
 ENTRYPOINT ["java","-jar","/app/app.jar"]
+

@@ -87,14 +87,19 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.care.boot.BootApplication</mainClass>
+				</configuration>
 			</plugin>
 
 			<plugin>
 				<groupId>com.google.cloud.tools</groupId>
 				<artifactId>jib-maven-plugin</artifactId>
 				<version>3.4.3</version>
+				<configuration>
+					<mainClass>com.care.boot.BootApplication</mainClass>
+				</configuration>
 			</plugin>
-			
 		</plugins>
 	</build>
 
