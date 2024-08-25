@@ -57,23 +57,33 @@ jobs:
         run: |
           docker push ${{ steps.set-var.outputs.ECR_REGISTRY }}/${{ steps.set-var.outputs.ECR_REPOSITORY }}:${{ steps.set-var.outputs.IMAGE_TAG }}
 
+  cd:
+    needs: [ci]
+    runs-on: ubuntu-latest
+    steps:
       - name: Checkout manifest repository
         uses: actions/checkout@v2
         with:
           repository: KingKyeong-Rok/manifest
           path: manifest-repo
-          token: ${{ secrets.PAT_TOKEN }}  # 여기서 PAT_TOKEN을 사용
+          token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 1
 
-      - name: Update manifest with new image
-        run: |
-          sed -i "s|image: .*$|image: ${{ steps.set-var.outputs.ECR_REGISTRY }}/${{ steps.set-var.outputs.ECR_REPOSITORY }}:${{ steps.set-var.outputs.IMAGE_TAG }}|" manifest-repo/k8s/deploy-basic2.yml  # deploy-basic2.yml 파일 경로로 수정
+      - name: Replace image tag in helm values (LOCAL)
+        uses: mikefarah/yq@master
+        env:
+          IMAGE_TAG: ${{ needs.ci.outputs.IMAGE_TAG }}
+        with:
+          cmd: yq eval -i '.image.tag = env(IMAGE_TAG)' 'manifest-repo/k8s/deploy-basic2.yml'
 
-      - name: Commit and Push changes
+      - name: Push helm repo
+        env:
+          token: ${{ secrets.GH_TOKEN }}
+          IMAGE_TAG: ${{ needs.ci.outputs.IMAGE_TAG }}
         run: |
           cd manifest-repo
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
-          git add k8s/deploy-basic2.yml  # deploy-basic2.yml 파일 경로로 수정
-          git commit -m "Update image to ${{ steps.set-var.outputs.IMAGE_TAG }}"
-          git push origin main
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add k8s/deploy-basic2.yml
+          git commit --message "Update image tag to $IMAGE_TAG"
+          git push https://${{ secrets.GH_TOKEN }}@github.com/KingKyeong-Rok/manifest.git main
