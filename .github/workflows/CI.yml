@@ -30,8 +30,8 @@ jobs:
 
       - name: Create ECR repository if not exists
         run: |
-          aws ecr describe-repositories --repository-names my-app-repo || \
-          aws ecr create-repository --repository-name my-app-repo --region $AWS_REGION
+          aws ecr describe-repositories --repository-names my-app || \
+          aws ecr create-repository --repository-name my-app --region $AWS_REGION
 
       - name: Build Docker image
         id: build-image
@@ -49,21 +49,9 @@ jobs:
         run: |
           git clone https://${{ secrets.PAT_TOKEN }}@github.com/KingKyeong-Rok/manifest.git
           cd manifest
-          if [ -f "k8s/deploy-basic2.yml" ]; then
-            sed -i "s|image: .*|image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app-repo:latest|" ./k8s/deploy-basic2.yml
-          else
-            echo "Error: k8s/deploy-basic2.yml not found!"
-            exit 1
-          fi
-
-      - name: Conditionally commit changes
-        run: |
+          sed -i "s|image: .*|image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app:latest|" k8s/deploy-basic2.yml
           git config --global user.email "0088skg@naver.com"
           git config --global user.name "KingKyeong-Rok"
           git add k8s/deploy-basic2.yml
-          if ! git diff-index --quiet HEAD --; then
-            git commit -m "Update image to latest"
-            git push https://${{ secrets.PAT_TOKEN }}@github.com/KingKyeong-Rok/manifest.git main
-          else
-            echo "No changes detected, skipping commit."
-          fi
+          git commit -m "Update image to latest"
+          git push https://${{ secrets.PAT_TOKEN }}@github.com/KingKyeong-Rok/manifest.git main
