@@ -67,13 +67,13 @@ jobs:
 
       - name: Update manifest with new image
         run: |
-          sed -i "s|image: .*$|image: ${{ steps.set-var.outputs.ECR_REGISTRY }}/${{ steps.set-var.outputs.ECR_REPOSITORY }}:${{ steps.set-var.outputs.IMAGE_TAG }}|" manifest-repo/k8s/deployment.yaml
+          sed -i "s|image: .*$|image: ${{ steps.set-var.outputs.ECR_REGISTRY }}/${{ steps.set-var.outputs.ECR_REPOSITORY }}:${{ steps.set-var.outputs.IMAGE_TAG }}|" manifest-repo/k8s/deploy-basic2.yml  # deploy-basic2.yml 파일 경로로 수정
 
       - name: Commit and Push changes
         run: |
           cd manifest-repo
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
-          git add k8s/deployment.yaml
+          git add k8s/deploy-basic2.yml  # deploy-basic2.yml 파일 경로로 수정
           git commit -m "Update image to ${{ steps.set-var.outputs.IMAGE_TAG }}"
           git push origin main
