@@ -36,11 +36,18 @@ jobs:
       # Docker Buildx를 설정하여 다중 아키텍처 빌드를 지원합니다.
       uses: docker/setup-buildx-action@v2
 
-    - name: Log in to Amazon ECR
-      # Amazon ECR에 로그인하는 단계입니다.
-      uses: aws-actions/amazon-ecr-login@v1
+    - name: Configure AWS credentials
+      # AWS 자격 증명을 설정하는 단계입니다.
+      uses: aws-actions/configure-aws-credentials@v1
       with:
-        region: ${{ secrets.AWS_REGION }}  # AWS 리전 정보를 GitHub Secrets에서 가져옵니다.
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Log in to Amazon ECR
+      # AWS CLI를 사용하여 Amazon ECR에 로그인하는 단계입니다.
+      run: |
+        aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
     - name: Build and push Docker image to Amazon ECR
       # Docker 이미지를 빌드하고 Amazon ECR에 푸시하는 단계입니다.
@@ -69,4 +76,3 @@ jobs:
         echo "${KUBE_CONFIG_DATA}" | base64 --decode > ~/.kube/config  # kubeconfig 정보를 설정합니다.
         kubectl set image deployment/kkr-deploy kkr=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG  # 'kkr-deploy' 배포의 'kkr' 컨테이너의 이미지를 최신으로 업데이트합니다.
         kubectl apply -k k8s/  # kustomize 또는 YAML 파일을 사용해 Kubernetes 리소스를 배포합니다.
-  
