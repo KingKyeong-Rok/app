@@ -29,18 +29,18 @@ jobs:
       - name: Build Docker image
         id: build-image
         run: |
-          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-app:latest .
+          docker build -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-app-repo:latest .
 
       - name: Push Docker image to Amazon ECR
         id: push-image
         run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-app:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-app-repo:latest
 
       - name: Update image in manifest repository
         run: |
           git clone https://${{ secrets.GH_TOKEN }}@github.com/KingKyeong-Rok/manifest.git
           cd manifest
-          sed -i "s|image: .*|image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-app:latest|" k8s/deploy-basic2.yml
+          sed -i "s|image: .*|image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-app-repo:latest|" k8s/deploy-basic2.yml
           git config --global user.email "0088skg@naver.com"
           git config --global user.name "KingKyeong-Rok"
           git add k8s/deploy-basic2.yml
