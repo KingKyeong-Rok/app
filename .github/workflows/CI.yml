@@ -73,6 +73,7 @@ jobs:
         ECR_REPOSITORY: my-app-repo
         IMAGE_TAG: latest
       run: |
+        mkdir -p ~/.kube  # .kube 디렉토리를 생성합니다.
         echo "${KUBE_CONFIG_DATA}" | base64 --decode > ~/.kube/config  # kubeconfig 정보를 설정합니다.
         kubectl set image deployment/kkr-deploy kkr=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG  # 'kkr-deploy' 배포의 'kkr' 컨테이너의 이미지를 최신으로 업데이트합니다.
         kubectl apply -k k8s/  # kustomize 또는 YAML 파일을 사용해 Kubernetes 리소스를 배포합니다.
