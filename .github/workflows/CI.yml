@@ -66,7 +66,7 @@ jobs:
         with:
           repository: KingKyeong-Rok/manifest
           path: manifest-repo
-          token: ${{ secrets.PAT_TOKEN }}  # token 필드를 추가
+          token: ${{ secrets.PAT_TOKEN }}  # PAT_TOKEN 사용
           fetch-depth: 1
 
       - name: Replace image tag in helm values (LOCAL)
@@ -78,12 +78,12 @@ jobs:
 
       - name: Push helm repo
         env:
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}  # 여기서도 PAT_TOKEN 사용
           IMAGE_TAG: ${{ needs.ci.outputs.IMAGE_TAG }}
         run: |
           cd manifest-repo
-          git config --global user.email "actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git add k8s/deploy-basic2.yml
+          git config --global user.email "0088skg@naver.com"
+          git config --global user.name "KingKyeong-Rok"
+          git add ./k8s/deploy-basic2.yml
           git commit --message "Update image tag to $IMAGE_TAG"
-          git push https://${{ secrets.GH_TOKEN }}@github.com/KingKyeong-Rok/manifest.git main
+          git push https://${{ secrets.PAT_TOKEN }}@github.com/KingKyeong-Rok/manifest.git main  # 여기서도 PAT_TOKEN 사용
