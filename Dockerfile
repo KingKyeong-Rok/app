@@ -1,8 +1,9 @@
-# Base image 설정 (예: OpenJDK)
-FROM openjdk:17-jdk
+# Java 17 기반의 이미지를 사용합니다.
+FROM openjdk:17-jdk-alpine
 
-# 애플리케이션 JAR 파일을 컨테이너에 복사
-COPY boot-0.0.1-SNAPSHOT.jar /app.jar
+# JAR 파일을 컨테이너로 복사합니다.
+ARG JAR_FILE=target/*.jar
+COPY ${JAR_FILE} app.jar
 
-# 컨테이너 시작 시 실행될 명령어
+# 애플리케이션을 실행합니다.
 ENTRYPOINT ["java","-jar","/app.jar"]
