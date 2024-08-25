@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 # 240825 manifest git action까지 넣은 버전
 
+=======
+>>>>>>> e71f65ae382f9ba0c6250404254994a57a4e95cd
 name: CI/CD Pipeline
 
 on:
@@ -32,8 +35,13 @@ jobs:
 
       - name: Create ECR repository if not exists
         run: |
+<<<<<<< HEAD
           aws ecr describe-repositories --repository-names my-app || \
           aws ecr create-repository --repository-name my-app --region $AWS_REGION
+=======
+          aws ecr describe-repositories --repository-names my-app-repo || \
+          aws ecr create-repository --repository-name my-app-repo --region $AWS_REGION
+>>>>>>> e71f65ae382f9ba0c6250404254994a57a4e95cd
 
       - name: Build Docker image
         id: build-image
@@ -51,12 +59,17 @@ jobs:
         run: |
           git clone https://${{ secrets.PAT_TOKEN }}@github.com/KingKyeong-Rok/manifest.git
           cd manifest
+<<<<<<< HEAD
           sed -i "s|image: .*|image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app:latest|" k8s/deploy-basic2.yml
+=======
+          sed -i "s|image: .*|image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app-repo:latest|" k8s/deploy-basic2.yml
+>>>>>>> e71f65ae382f9ba0c6250404254994a57a4e95cd
           git config --global user.email "0088skg@naver.com"
           git config --global user.name "KingKyeong-Rok"
           git add k8s/deploy-basic2.yml
           git commit -m "Update image to latest"
           git push https://${{ secrets.PAT_TOKEN }}@github.com/KingKyeong-Rok/manifest.git main
+<<<<<<< HEAD
 
 
 
@@ -177,3 +190,5 @@ jobs:
 
 #       - name: Build and Push Docker image with Jib
 #         run: mvn jib:build
+=======
+>>>>>>> e71f65ae382f9ba0c6250404254994a57a4e95cd
