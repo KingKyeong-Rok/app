@@ -69,6 +69,7 @@
 			<groupId>org.glassfish.web</groupId>
 			<artifactId>jakarta.servlet.jsp.jstl</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.mariadb.jdbc</groupId>
 			<artifactId>mariadb-java-client</artifactId>
@@ -79,14 +80,6 @@
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-            <groupId>org.springframework.session</groupId>
-            <artifactId>spring-session-data-redis</artifactId>
-        </dependency>
-        <dependency>
-		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot-starter-data-redis</artifactId>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -94,23 +87,15 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<mainClass>com.care.boot.BootApplication</mainClass> <!-- 메인 클래스 경로 -->
-				</configuration>
 			</plugin>
-      		<plugin>
-        		<groupId>com.google.cloud.tools</groupId>
-        		<artifactId>jib-maven-plugin</artifactId>
-        		<version>3.4.3</version>
-        		<configuration>
-          			<to>
-            			<image>891377406720.dkr.ecr.ap-northeast-2.amazonaws.com/my-app-repo:latest</image>
-          			</to>
-          			<container>
-            			<mainClass>com.care.boot.BootApplication</mainClass>
-          			</container>
-        		</configuration>
-      		</plugin>
+
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<version>3.4.3</version>
+			</plugin>
+			
 		</plugins>
 	</build>
+
 </project>

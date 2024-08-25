@@ -1,84 +1,63 @@
 # 240825 manifest git action까지 넣은 버전
 
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
-    paths-ignore:
-      - '.gitignore'
-      - '.dockerignore'
-      - 'README.md'
-  pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  ci:
+  build-and-push-image:
     runs-on: ubuntu-latest
-    outputs:
-      IMAGE_TAG: ${{ steps.set-var.outputs.IMAGE_TAG }}
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
+      - name: Checkout code
+        uses: actions/checkout@v2
 
       - name: Set up AWS environment variables
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> $GITHUB_ENV
+          echo "AWS_ACCOUNT_ID=${{ secrets.AWS_ACCOUNT_ID }}" >> $GITHUB_ENV
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
 
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
-        with:
-          mask-password: false
-          registry-type: private
-          skip-logout: false
 
-      - name: Set var
-        id: set-var
+      - name: Create ECR repository if not exists
         run: |
-          echo ::set-output name=ECR_REGISTRY::${{ secrets.ECR_REGISTRY }}
-          echo ::set-output name=ECR_REPOSITORY::my-app-repo
-          echo ::set-output name=IMAGE_TAG::latest  # 여기서 IMAGE_TAG를 'latest'로 설정
+          aws ecr describe-repositories --repository-names my-app || \
+          aws ecr create-repository --repository-name my-app --region $AWS_REGION
 
-      - name: Docker image Build
+      - name: Build Docker image
         id: build-image
         run: |
-          docker build \
-            -f Dockerfile \
-            -t ${{ steps.set-var.outputs.ECR_REGISTRY }}/${{ steps.set-var.outputs.ECR_REPOSITORY }}:${{ steps.set-var.outputs.IMAGE_TAG }} .
+          docker build -t ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app-repo:latest .
 
-      - name: Docker image Push
+      - name: Push Docker image to Amazon ECR
         id: push-image
         run: |
-          docker push ${{ steps.set-var.outputs.ECR_REGISTRY }}/${{ steps.set-var.outputs.ECR_REPOSITORY }}:${{ steps.set-var.outputs.IMAGE_TAG }}
+          docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app-repo:latest
 
-      - name: Checkout manifest repository
-        uses: actions/checkout@v2
-        with:
-          repository: KingKyeong-Rok/manifest
-          path: manifest-repo
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 1
-
-      - name: Update manifest with new image
+      - name: Clone and update manifest repository
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}  # PAT_TOKEN을 환경 변수로 설정
         run: |
-          sed -i "s|image: .*$|image: ${{ steps.set-var.outputs.ECR_REGISTRY }}/${{ steps.set-var.outputs.ECR_REPOSITORY }}:${{ steps.set-var.outputs.IMAGE_TAG }}|" manifest-repo/k8s/deployment.yaml
+          git clone https://${{ secrets.PAT_TOKEN }}@github.com/KingKyeong-Rok/manifest.git
+          cd manifest
+          sed -i "s|image: .*|image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app:latest|" k8s/deploy-basic2.yml
+          git config --global user.email "0088skg@naver.com"
+          git config --global user.name "KingKyeong-Rok"
+          git add k8s/deploy-basic2.yml
+          git commit -m "Update image to latest"
+          git push https://${{ secrets.PAT_TOKEN }}@github.com/KingKyeong-Rok/manifest.git main
 
-      - name: Commit and Push changes
-        run: |
-          cd manifest-repo
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
-          git add k8s/deployment.yaml
-          git commit -m "Update image to ${{ steps.set-var.outputs.IMAGE_TAG }}"
-          git push origin main
 
 
 
