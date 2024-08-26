@@ -3,5 +3,6 @@
     
 <div align="center" class="main_div">
 	더할 나위 없다.<br>
+	김경록<br>
 	로그인 아이디 : ${sessionScope.id }<br>
 </div>
