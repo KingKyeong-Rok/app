@@ -23,8 +23,8 @@ COPY src ./src
 # 애플리케이션을 빌드합니다.
 RUN ./mvnw clean package
 
-# 컨테이너 외부에서 접근할 수 있도록 8080 포트를 오픈합니다.
+# 컨테이너 외부에서 접근할 수 있도록 80 포트를 오픈합니다.
 EXPOSE 80
 
-# JAR 파일을 실행하는 명령어를 정의합니다.
-ENTRYPOINT ["./mvnw", "spring-boot:run"]
+# JVM 메모리 설정 및 JAR 파일을 실행하는 명령어를 정의합니다.
+ENTRYPOINT ["./mvnw", "spring-boot:run", "-Dspring-boot.run.jvmArguments=-Xmx512m"]
