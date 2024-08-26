@@ -56,9 +56,13 @@ jobs:
         sed -i "s|image: .*|image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app-repo:latest|" k8s/deploy-basic2.yml
         git config --global user.email "0088skg@naver.com"
         git config --global user.name "KingKyeong-Rok"
-        git add k8s/deploy-basic2.yml
-        git commit -m "Update image to latest"
-        git push https://${{ secrets.PAT_TOKEN }}@github.com/KingKyeong-Rok/manifest.git main
+        if [ -n "$(git status --porcelain)" ]; then
+          git add k8s/deploy-basic2.yml
+          git commit -m "Update image to latest"
+          git push https://${{ secrets.PAT_TOKEN }}@github.com/KingKyeong-Rok/manifest.git main
+        else
+          echo "No changes to commit"
+        fi
 
     - name: Trigger manifest repository deployment
       run: |
