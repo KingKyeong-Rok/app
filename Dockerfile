@@ -7,6 +7,11 @@ WORKDIR /app
 # Maven Wrapper 스크립트(mvnw)와 필요한 파일들을 복사합니다.
 COPY mvnw .
 COPY .mvn .mvn
+
+# mvnw에 실행 권한을 부여합니다.
+RUN chmod +x mvnw
+
+# pom.xml 파일을 복사합니다.
 COPY pom.xml .
 
 # 의존성 및 플러그인 다운로드
@@ -17,9 +22,6 @@ COPY src ./src
 
 # 애플리케이션을 빌드합니다.
 RUN ./mvnw clean package
-
-# mvnw에 실행 권한을 부여합니다.
-RUN chmod +x mvnw
 
 # 컨테이너 외부에서 접근할 수 있도록 8080 포트를 오픈합니다.
 EXPOSE 80
