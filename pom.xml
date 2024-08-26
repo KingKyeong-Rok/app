@@ -80,14 +80,6 @@
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 			<scope>provided</scope>
 		</dependency>
-    	<dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.session</groupId>
-            <artifactId>spring-session-data-redis</artifactId>
-        </dependency>
 	</dependencies>
 
 	<build>
@@ -95,14 +87,19 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.care.boot.BootApplication</mainClass>
+				</configuration>
 			</plugin>
 
-      <plugin>
-        		<groupId>com.google.cloud.tools</groupId>
-        		<artifactId>jib-maven-plugin</artifactId>
-        		<version>3.4.3</version>
-      		</plugin>
-			
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<version>3.4.3</version>
+				<configuration>
+					<mainClass>com.care.boot.BootApplication</mainClass>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
