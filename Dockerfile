@@ -9,7 +9,6 @@ COPY mvnw .
 COPY .mvn .mvn
 
 # Maven 빌드에서 생성된 JAR 파일을 컨테이너로 복사합니다.
-# ARG는 빌드 시 사용할 수 있는 인자를 의미하며, 여기서는 JAR 파일의 경로를 인자로 받습니다.
 ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} app.jar
 
@@ -20,4 +19,4 @@ RUN chmod +x mvnw
 EXPOSE 80
 
 # JAR 파일을 실행하는 명령어를 정의합니다.
-ENTRYPOINT ["./mvnw","spring-boot:run"]
+ENTRYPOINT ["./mvnw", "spring-boot:run"]
