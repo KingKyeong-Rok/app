@@ -1,43 +1,31 @@
-# 워크플로우의 이름을 정의합니다.
-name: Build and Deploy to Kubernetes
+name: Build and Push to ECR
 
-# 워크플로우가 실행될 트리거를 정의합니다.
 on:
   push:
     branches:
-      - main  # main 브랜치에 푸시될 때 워크플로우 실행
-  pull_request:
-    branches:
-      - main  # main 브랜치에 대한 풀 리퀘스트 생성 시 워크플로우 실행
+      - main
 
-# 실제 워크플로우의 작업(job)을 정의합니다.
 jobs:
-  build:
-    # 워크플로우가 실행될 환경을 설정합니다. (여기서는 최신 우분투)
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
-      # 리포지토리의 코드를 체크아웃하는 액션입니다.
       uses: actions/checkout@v3
 
     - name: Set up JDK 17
-      # JDK 17을 설치하는 액션입니다.
       uses: actions/setup-java@v3
       with:
         java-version: '17'
         distribution: 'adopt'
 
     - name: Build with Maven
-      # Maven을 사용해 프로젝트를 빌드하고 패키징합니다.
       run: mvn clean package
 
     - name: Set up Docker Buildx
-      # Docker Buildx를 설정하여 다중 아키텍처 빌드를 지원합니다.
       uses: docker/setup-buildx-action@v2
 
     - name: Configure AWS credentials
-      # AWS 자격 증명을 설정하는 단계입니다.
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -45,12 +33,10 @@ jobs:
         aws-region: ${{ secrets.AWS_REGION }}
 
     - name: Log in to Amazon ECR
-      # AWS CLI를 사용하여 Amazon ECR에 로그인하는 단계입니다.
       run: |
         aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
     - name: Build and push Docker image to Amazon ECR
-      # Docker 이미지를 빌드하고 Amazon ECR에 푸시하는 단계입니다.
       env:
         ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
         ECR_REPOSITORY: my-app-repo
@@ -59,22 +45,8 @@ jobs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-    - name: Set up Kubernetes
-      # kubectl을 설치하고 설정하는 단계입니다.
-      uses: azure/setup-kubectl@v1
-      with:
-        version: v1.21.0
-
-    - name: Deploy to Kubernetes
-      # kubectl을 사용하여 Kubernetes에 애플리케이션을 배포하는 단계입니다.
-      working-directory: ${{ github.workspace }}/k8s  # 'k8s/' 디렉토리로 작업 디렉토리를 설정합니다.
-      env:
-        KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}  # Kubernetes 클러스터 접근을 위한 kubeconfig 정보를 GitHub Secrets에서 가져옵니다.
-        ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-        ECR_REPOSITORY: my-app-repo
-        IMAGE_TAG: latest
+    - name: Trigger manifest repository deployment
+      # manifest 리포지토리의 워크플로우를 트리거하거나, 관련 정보를 전송
       run: |
-        mkdir -p ~/.kube  # .kube 디렉토리를 생성합니다.
-        echo "${KUBE_CONFIG_DATA}" | base64 --decode > ~/.kube/config  # kubeconfig 정보를 설정합니다.
-        kubectl set image deployment/kkr-deploy kkr=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG  # 'kkr-deploy' 배포의 'kkr' 컨테이너의 이미지를 최신으로 업데이트합니다.
-        kubectl apply -k .  # 현재 디렉토리(k8s/)에서 kustomize 또는 YAML 파일을 사용해 Kubernetes 리소스를 배포합니다.
+        # 여기에 GitHub API 호출이나, Slack/Webhook 등을 이용한 트리거 로직 작성
+        echo "Deployment workflow triggered in manifest repository."
