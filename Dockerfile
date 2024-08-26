@@ -19,4 +19,8 @@ RUN chmod +x mvnw
 EXPOSE 80
 
 # JAR 파일을 실행하는 명령어를 정의합니다.
+<<<<<<< HEAD
 ENTRYPOINT ["./mvnw", "spring-boot:run"]
+=======
+ENTRYPOINT ["./mvnw", "spring-boot:run"]
+>>>>>>> f2c4af41c2dc6006f211115a5f246e03b73fd816

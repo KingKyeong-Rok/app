@@ -47,19 +47,24 @@ jobs:
 
     - name: Clone and update manifest repository
       env:
-        PAT_TOKEN: ${{ secrets.PAT_TOKEN }}  # PAT_TOKEN을 환경 변수로 설정
+        PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+        AWS_REGION: ${{ secrets.AWS_REGION }}
       run: |
         git clone https://${{ secrets.PAT_TOKEN }}@github.com/KingKyeong-Rok/manifest.git
         cd manifest
         sed -i "s|image: .*|image: ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/my-app-repo:latest|" k8s/deploy-basic2.yml
         git config --global user.email "0088skg@naver.com"
         git config --global user.name "KingKyeong-Rok"
-        git add k8s/deploy-basic2.yml
-        git commit -m "Update image to latest"
-        git push https://${{ secrets.PAT_TOKEN }}@github.com/KingKyeong-Rok/manifest.git main
+        if [ -n "$(git status --porcelain)" ]; then
+          git add k8s/deploy-basic2.yml
+          git commit -m "Update image to latest"
+          git push https://${{ secrets.PAT_TOKEN }}@github.com/KingKyeong-Rok/manifest.git main
+        else
+          echo "No changes to commit"
+        fi
 
     - name: Trigger manifest repository deployment
-      # manifest 리포지토리의 워크플로우를 트리거하거나, 관련 정보를 전송
       run: |
         # 여기에 GitHub API 호출이나, Slack/Webhook 등을 이용한 트리거 로직 작성
         echo "Deployment workflow triggered in manifest repository."
