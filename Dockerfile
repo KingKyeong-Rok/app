@@ -10,8 +10,8 @@ ARG JAR_FILE=target/*.jar
 COPY ${JAR_FILE} app.jar
 
 # 컨테이너 외부에서 접근할 수 있도록 8080 포트를 오픈합니다.
-EXPOSE 8080
+EXPOSE 80
 
 # JAR 파일을 실행하는 명령어를 정의합니다.
-ENTRYPOINT ["java","-jar","/app/app.jar"]
+ENTRYPOINT ["mvnw","spring-boot:run"]
 
